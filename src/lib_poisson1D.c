@@ -8,7 +8,40 @@
 void set_GB_operator_rowMajor_poisson1D(double* AB, int *lab, int *la){
 
   //TODO
+  int jj, ii1, ii2,ii3,ii4;
+  
+  for (jj=0;jj<(*la);jj++){
+    ii1 = jj;
+    ii2 = (*la) + jj;
+    ii3 = 2*(*la) + jj;
+    ii4 = 3*(*la) + jj;
+    AB[ii1]=0.0;
+    AB[ii2]=-1.0;
+    AB[ii3]=2.0;
+    AB[ii4]=-1.0;
+    }
+    AB[*la]=0.0;
+    AB[4*(*la)-1]=0.0;   
 }
+
+for (ii=0;ii<(*la);ii++){
+
+ kk= ii*(*lab);
+ if(*kv>=0){
+    for(jj=0;jj<*kv;jj++){
+    AB[kk+jj]=0.0;
+     }
+    }
+    AB[kk+ *kv]=-1.0;
+    AB[kk+ *kv+1]=2.0;
+    AB[kk+ *kv+2]=-1.0;
+  }
+AB[0]=0.0;
+if(*kv == 1){
+AB[1]=0;}
+AB[(*lab)*(*la)-1]=0.0;
+
+
 void set_GB_operator_colMajor_poisson1D(double* AB, int *lab, int *la, int *kv){
   int ii, jj, kk;
   for (jj=0;jj<(*la);jj++){
@@ -169,8 +202,57 @@ double eigmin_poisson1D(int *la){
 
 double richardson_alpha_opt(int *la){
   //TODO
+  double alpha_opt;
+  alpha_opt=eigmin_poisson1D(la);
+  alpha_opt += eigmax_poisson1D(la);
+  alpha_opt = 2.0/alpha_opt;
+  return alpha_opt;
 }
 
 void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, int *lab, int *la,int *ku, int*kl, double *tol, int *maxit){
   //TODO
+  double alpha,beta,res, normb,normres;
+  double *Y;
+  int incx,incy;
+  int it;
+  it=0;
+  incx=1;
+  incy=1;
+  Y=(double *) calloc(*la, sizeof(double));
+  cblad_dcopy(*la,RHS,incx,Y,incy);
+  normb= cblas_ddot(*la,Y,1,Y,1);
+  normb=sqrt(normb);
+  alpha=-1.0;
+  beta=1.0;
+  cblas_dgbmv(CblasColMajor,CblasNoTrans, *la, *la,*kl, *ku,alpha,AB,*lab,X,incx,beta,Y,incy);
+  normres=cblas_ddot(*la,Y,1,Y,1);
+  normres = sqrt(normres);
+  res=normres/normb;
+  printf("\nres0 = %lf , normabs = %lf \n",res, normres);
+  
+  while ((res>(*tol)) & (it<(*maxit-1))){
+  cblas_daxpy(*la,*alpha_rich,Y,incx,X,incy);
+  cblas_dcopy(*la,RHS,incx,Y,incy);
+  cblas_dgbmv(CblasColMajor,CblasNoTrans,*la,*la,*kl,*ku,alpha,AB,*lab,X,incx,beta,Y,incy);
+  normres=cblas_ddot(*la,Y,1,Y,1);
+  normres=sqrt(normres);
+  printf("\n resvec[%d] = %e \n",it,res);
+  }
+  free(Y);
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }
