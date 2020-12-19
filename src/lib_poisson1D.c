@@ -239,20 +239,4 @@ void richardson_alpha(double *AB, double *RHS, double *X, double *alpha_rich, in
   printf("\n resvec[%d] = %e \n",it,res);
   }
   free(Y);
-  }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-}
+  } 
